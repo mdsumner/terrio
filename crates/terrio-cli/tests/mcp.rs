@@ -341,7 +341,7 @@ fn interrupted_goode_homolosine_coordinates_and_refusal_through_mcp() {
         replies[&1]["result"]["content"][0]["text"].as_str().unwrap().split_whitespace().filter_map(|v| v.parse().ok()).collect();
     assert_eq!(values.len(), 2);
     assert!((values[0] - 16168031.516279552).abs() < 0.001);
-    assert!((values[1] - -4674913.235357148).abs() < 0.001);
+    assert!((values[1] + 4674913.235357148).abs() < 0.001);
     assert_eq!(replies[&2]["result"]["isError"], true);
 }
 

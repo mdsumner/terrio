@@ -3031,15 +3031,10 @@ const IGH_PHI_BOUNDARY: f64 = (40.0 + 44.0 / 60.0 + 11.8 / 3600.0) * PI / 180.0;
 /// PROJ's slack on the zones' edges.
 const IGH_EPSLN: f64 = 1e-10;
 
-/// Degrees in radians, for the zones' edges.
-fn igh_rad(deg: f64) -> f64 {
-    deg.to_radians()
-}
-
 #[derive(Debug)]
 struct Igh {
     moll: Moll,
-    /// The northing of the northern Mollweide zones (the southern ones are at -dy0).
+    /// The offset of the northern Mollweide zones (the southern ones are shifted by -dy0).
     dy0: f64,
 }
 
@@ -3057,16 +3052,16 @@ impl Igh {
     /// sinusoidal/Mollweide boundary at the northing IGH_PHI_BOUNDARY.
     fn zone(x: f64, y: f64) -> usize {
         if y >= IGH_PHI_BOUNDARY {
-            if x <= -igh_rad(40.0) { 1 } else { 2 }
+            if x <= -40f64.to_radians() { 1 } else { 2 }
         } else if y >= 0.0 {
-            if x <= -igh_rad(40.0) { 3 } else { 4 }
+            if x <= -40f64.to_radians() { 3 } else { 4 }
         } else {
             let band = if y >= -IGH_PHI_BOUNDARY { 5 } else { 9 };
-            band + if x <= -igh_rad(100.0) {
+            band + if x <= -100f64.to_radians() {
                 0
-            } else if x <= -igh_rad(20.0) {
+            } else if x <= -20f64.to_radians() {
                 1
-            } else if x <= igh_rad(80.0) {
+            } else if x <= 80f64.to_radians() {
                 2
             } else {
                 3
@@ -3109,7 +3104,7 @@ impl Proj for Igh {
     fn inv(&self, x: f64, y: f64) -> Option<(f64, f64)> {
         // PROJ's bounds. The southern bound is -y90 + EPSLN, where the northern is y90 + EPSLN, as
         // in PROJ's igh.cpp: it refuses the south pole's own northing, -y90.
-        let y90 = self.dy0 + 2f64.sqrt();
+        let y90 = self.dy0 + 2f64.sqrt(); // sqrt(2) is the Mollweide pole's northing.
         if y > y90 + IGH_EPSLN || y < -y90 + IGH_EPSLN {
             return None;
         }
@@ -3120,8 +3115,8 @@ impl Proj for Igh {
         let lam = lam + lam0;
         // The point must be in the zone's own longitudes (zones 1 and 2 also hold the lobes'
         // polar caps that PROJ allows).
-        let within = |lo: f64, hi: f64| lam >= igh_rad(lo) - IGH_EPSLN && lam <= igh_rad(hi) + IGH_EPSLN;
-        let above = |lat: f64| phi >= igh_rad(lat) - IGH_EPSLN && phi <= igh_rad(90.0) + IGH_EPSLN;
+        let within = |lo: f64, hi: f64| lam >= lo.to_radians() - IGH_EPSLN && lam <= hi.to_radians() + IGH_EPSLN;
+        let above = |lat: f64| phi >= lat.to_radians() - IGH_EPSLN && phi <= 90f64.to_radians() + IGH_EPSLN;
         let ok = match z {
             1 => within(-180.0, -40.0) || (within(-40.0, -10.0) && above(60.0)),
             2 => within(-40.0, 180.0) || (within(-180.0, -160.0) && above(50.0)) || (within(-50.0, -40.0) && above(60.0)),

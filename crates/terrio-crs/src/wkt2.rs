@@ -530,6 +530,7 @@ const WORLD: [(&str, &str); 27] = [
     ("vandergrinten", "vandg"),
     ("naturalearth", "natearth"),
     ("quarticauthalic", "qua_aut"),
+    // PROJ's uninterrupted goode, which terrio refuses; it is not igh.
     ("goodehomolosine", "goode"),
     ("interruptedgoodehomolosine", "igh"),
     ("aitoff", "aitoff"),
