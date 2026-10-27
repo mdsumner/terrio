@@ -444,7 +444,7 @@ TERRIO_TEST_DATA=../terrio-data cargo test -p terrio-crs --all-features
 
 Both runs exercise EPSG tables and grids; the data-dependent tests require the
 reference datasets described above. The 117-method inventory explicitly checks
-42 native methods with default features and 88 with `wbprojection-fallback`.
+43 native methods with default features and 89 with `wbprojection-fallback`.
 Unsupported methods must be refused in every tested encoding. The projection
 conformance runner enables the fallback to retain Terrio's full coverage.
 

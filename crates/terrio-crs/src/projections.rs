@@ -3031,6 +3031,11 @@ const IGH_PHI_BOUNDARY: f64 = (40.0 + 44.0 / 60.0 + 11.8 / 3600.0) * PI / 180.0;
 /// PROJ's slack on the zones' edges.
 const IGH_EPSLN: f64 = 1e-10;
 
+/// Degrees in radians, for the zones' edges.
+fn d(deg: f64) -> f64 {
+    deg.to_radians()
+}
+
 #[derive(Debug)]
 struct Igh {
     moll: Moll,
@@ -3048,7 +3053,6 @@ impl Igh {
     /// The zone (1 to 12) of a longitude and latitude in radians, or of an easting and northing
     /// on the unit sphere (the sinusoidal zones' northing is their latitude).
     fn zone(x: f64, y: f64) -> usize {
-        let d = |deg: f64| deg.to_radians();
         if y >= IGH_PHI_BOUNDARY {
             if x <= -d(40.0) { 1 } else { 2 }
         } else if y >= 0.0 {
@@ -3113,7 +3117,6 @@ impl Proj for Igh {
         let lam = lam + lam0;
         // The point must be in the zone's own longitudes (zones 1 and 2 also hold the lobes'
         // polar caps that PROJ allows).
-        let d = |deg: f64| deg.to_radians();
         let within = |lo: f64, hi: f64| lam >= d(lo) - IGH_EPSLN && lam <= d(hi) + IGH_EPSLN;
         let above = |lat: f64| phi >= d(lat) - IGH_EPSLN && phi <= d(90.0) + IGH_EPSLN;
         let ok = match z {

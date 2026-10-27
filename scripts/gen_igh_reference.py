@@ -66,7 +66,7 @@ def main():
             for cut, lat in [(-40, 75), (-100, -75), (-20, -75), (80, -75)]:
                 west = transformed(forward, [wrap(lon_0 + cut - EPS), lat])
                 east = transformed(forward, [wrap(lon_0 + cut + EPS), lat])
-                inverse_points.append([(west[0] + east[0]) / 2, lat_y(west, east)])
+                inverse_points.append([(west[0] + east[0]) / 2, northing(west, east)])
             inverse_samples = [[point, transformed(inverse, point)] for point in inverse_points]
             cases.append(
                 dict(
@@ -96,7 +96,7 @@ def main():
     print(f"{len(cases)} configurations, {sum(len(c['samples']) for c in cases)} forward samples, {path.stat().st_size} bytes")
 
 
-def lat_y(west, east):
+def northing(west, east):
     """The northing of two points on one parallel."""
     assert abs(west[1] - east[1]) < 1e-6 * max(1, abs(west[1]))
     return west[1]
