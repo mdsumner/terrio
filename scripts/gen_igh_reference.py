@@ -47,11 +47,9 @@ def main():
                 samples.append([*point, projected, back])
             factor = target_crs.axis_info[0].unit_conversion_factor
             radius = target_crs.ellipsoid.semi_major_metre
-            # Points of the interruptions, past the poles and on PROJ's southern bound.
-            moll_dy = BOUNDARY * math.pi / 180 - math.sqrt(2) * math.sin(
-                _moll_theta(BOUNDARY * math.pi / 180)
-            )
-            y90 = (moll_dy + math.sqrt(2)) * radius
+            # Points of the interruptions, past the poles and on PROJ's southern bound. The
+            # pole's northing in metres comes from PROJ itself.
+            y90 = transformed(forward, [lon_0, 90])[1] * factor - y0
             unit = [
                 [0, 1.01 * y90 / radius * 180 / math.pi],
                 [0, -1.01 * y90 / radius * 180 / math.pi],
@@ -100,18 +98,6 @@ def northing(west, east):
     """The northing of two points on one parallel."""
     assert abs(west[1] - east[1]) < 1e-6 * max(1, abs(west[1]))
     return west[1]
-
-
-def _moll_theta(phi):
-    """Mollweide's auxiliary angle of a latitude, as PROJ iterates it."""
-    k = math.pi * math.sin(phi)
-    theta = phi
-    for _ in range(30):
-        step = (theta + math.sin(theta) - k) / (1 + math.cos(theta))
-        theta -= step
-        if abs(step) < 1e-7:
-            return theta / 2
-    return math.copysign(math.pi / 2, theta)
 
 
 if __name__ == "__main__":

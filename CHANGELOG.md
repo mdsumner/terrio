@@ -15,6 +15,8 @@
 - `mosaic`, `warp`, `concat` and `filter merge` now treat an input beginning
   with `@` as a file list, so a file named `@name.tif` must be written
   `./@name.tif`.
+- WKT2 `Goode Homolosine` (PROJ's uninterrupted `goode`) is refused; it was read
+  as `igh`.
 
 ### Command line
 
@@ -82,8 +84,7 @@
 - `+proj=igh` (interrupted Goode homolosine) is computed as PROJ does; it was
   refused. GDAL's WKT1 `Interrupted_Goode_Homolosine`, ESRI's
   `Goode_Homolosine` with `Option` 1 and WKT2 `Interrupted Goode Homolosine`
-  are read, and the first is written. WKT2 `Goode Homolosine` (PROJ's
-  uninterrupted `goode`) is now refused; it was read as `igh`.
+  are read, and the first is written.
 
 ### Warp
 

@@ -100,7 +100,7 @@ pub(crate) fn build(name: &str, s: &mut Setup<'_>) -> Result<Option<Box<dyn Proj
         "geos" => Box::new(Geos::new(s)?),
         "robin" => Box::new(Robin),
         "moll" | "wag4" | "wag5" => Box::new(Moll::new(name)),
-        "igh" => Box::new(Igh::new()),
+        "igh" => Box::new(Igh::new()?),
         "wintri" => Box::new(Wintri::new(s)?),
         "wink1" => Box::new(Wink1 { cosphi1: s.p.angle("lat_ts").unwrap_or(0.0).cos() }),
         "wink2" => Box::new(Wink2 { cosphi1: s.p.angle("lat_1").unwrap_or(0.0).cos() }),
@@ -3044,10 +3044,10 @@ struct Igh {
 }
 
 impl Igh {
-    fn new() -> Self {
+    fn new() -> Result<Self> {
         let moll = Moll::new("moll");
-        let (_, y1) = moll.fwd(0.0, IGH_PHI_BOUNDARY).expect("Mollweide of the boundary");
-        Self { moll, dy0: IGH_PHI_BOUNDARY - y1 }
+        let (_, y1) = moll.fwd(0.0, IGH_PHI_BOUNDARY).ok_or_else(|| err("igh: Mollweide of the boundary"))?;
+        Ok(Self { moll, dy0: IGH_PHI_BOUNDARY - y1 })
     }
 
     /// The zone (1 to 12) of a longitude and latitude in radians (forward), or of an easting and
