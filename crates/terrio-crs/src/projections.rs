@@ -3100,7 +3100,8 @@ impl Proj for Igh {
     }
 
     fn inv(&self, x: f64, y: f64) -> Option<(f64, f64)> {
-        // PROJ's bounds, including its southern one, which refuses the south pole's northing.
+        // PROJ's bounds. The southern one is -y90 + EPSLN, not - EPSLN, as in PROJ's igh.cpp:
+        // it refuses the south pole's own northing.
         let y90 = self.dy0 + 2f64.sqrt();
         if y > y90 + IGH_EPSLN || y < -y90 + IGH_EPSLN {
             return None;
