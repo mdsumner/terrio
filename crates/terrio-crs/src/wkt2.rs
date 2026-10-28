@@ -489,12 +489,19 @@ type ProjMethod = (String, Vec<(String, f64)>);
 fn proj_method(conv: &Node, method: &Node, ang: f64, to_meter: f64) -> Result<Option<ProjMethod>> {
     let Some(name) = method.name().and_then(|n| n.strip_prefix("PROJ ")) else { return Ok(None) };
     let word = |w: &str| !w.is_empty() && w.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'_');
-    // PROJ's `ob_tran` names the rotated projection in the method: `PROJ ob_tran o_proj=moll`.
-    let name = match name.strip_prefix("ob_tran o_proj=") {
-        Some(o_proj) if word(o_proj) => format!("ob_tran +o_proj={o_proj}"),
-        _ if word(name) => name.to_string(),
+    // PROJ writes a projection's string-valued parameters in the method's name:
+    // `PROJ ob_tran o_proj=moll`, `PROJ isea orient=pole`.
+    let mut words = name.split(' ');
+    let mut name = match words.next() {
+        Some(w) if word(w) => w.to_string(),
         _ => return Ok(None),
     };
+    for w in words {
+        match w.split_once('=') {
+            Some((k, v)) if word(k) && word(v) => name.push_str(&format!(" +{k}={v}")),
+            _ => return Ok(None),
+        }
+    }
     let mut params = Vec::new();
     for n in conv.children("PARAMETER") {
         let key = n.name().unwrap_or("");

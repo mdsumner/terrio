@@ -163,6 +163,13 @@
   ellipsoid they use the authalic latitude, as PROJ 9.8.1. GDAL's WKT1 (which
   carries the PROJ string), ESRI's `PROJ_healpix` and `PROJ_rhealpix` and WKT2
   `PROJ healpix` and `PROJ rhealpix` are read, and the first is written.
+- `+proj=isea` is computed as PROJ 9.8.1 does, with `+orient`, `+azi`, `+lon_0`,
+  `+lat_0`, `+resolution` and `+aperture`; it was refused. As in PROJ 9.8.1, the
+  inverse is defined for the default grid in its two orientations only, and on an
+  ellipsoid the forward takes the geodetic latitude on the semi-major axis while
+  the inverse uses the authalic radius. `+mode=di`, `dd` and `hex` (grid
+  addresses) are refused. GDAL's WKT1 (which carries the PROJ string), ESRI's
+  `PROJ_isea` and WKT2 `PROJ isea` are read, and the first is written.
 
 ### Warp
 
