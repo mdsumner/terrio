@@ -54,7 +54,7 @@ def transformation(source, target):
 def same_isea(reference):
     """Whether GDAL's PROJ computes isea as PROJ 9.8.1 does, which the corpus uses.
 
-    PROJ before 9.5 has no inverse and a forward up to a few millimetres different; PROJ 9.9
+    PROJ 9.4 has no inverse and a forward up to a few millimetres different; PROJ 9.9
     replaced the method (another origin, the authalic latitude on an ellipsoid).
     """
     case = reference["cases"][0]

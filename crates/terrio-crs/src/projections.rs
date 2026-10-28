@@ -3769,7 +3769,8 @@ fn isea_acos(t: f64) -> f64 {
     }
 }
 
-/// A longitude brought into [-pi, pi] as PROJ's isea does.
+/// A longitude brought into [-pi, pi] as PROJ's isea does, strictly (`adjlon` keeps values within
+/// pi + 1e-12 as they are).
 fn isea_normalize_lon(lon: f64) -> f64 {
     let mut lon = lon % (2.0 * PI);
     while lon > PI {

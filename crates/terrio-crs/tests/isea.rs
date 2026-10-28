@@ -60,8 +60,8 @@ fn every_configuration_figure_and_unit_matches_frozen_proj() {
 #[test]
 fn invalid_and_grid_address_options_are_refused() {
     let lonlat = SpatialRef::parse("+proj=longlat +R=1").unwrap();
-    // PROJ 9.8.1 refuses the first seven. The grid addresses of +mode=di, dd and hex are not
-    // coordinates, and terrio does not compute them.
+    // PROJ 9.8.1 refuses the first seven, as gen_isea_reference.py checks. The grid addresses of
+    // +mode=di, dd and hex are not coordinates, and terrio does not compute them.
     for bad in [
         "+orient=foo",
         "+orient",

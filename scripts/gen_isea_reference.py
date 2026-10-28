@@ -22,6 +22,8 @@ CONFIGURATIONS = [
     ("+resolution=5 +aperture=4", "m", 0, 0, False),
     ("+lon_0=11.25", "m", 0, 0, True),
 ]
+# Options PROJ refuses, which tests/isea.rs expects terrio to refuse too.
+REFUSED = ["+orient=foo", "+orient", "+mode=foo", "+mode", "+resolution=4.0", "+aperture=-3", "+resolution=99999999999999999999x"]
 # The authalic sphere of WGS 84, and WGS 84: PROJ's forward takes the geodetic latitude on the
 # unit sphere and scales it by the semi-major axis, its inverse uses the authalic radius.
 FIGURES = ["+R=6371007.1809184747", "+datum=WGS84"]
@@ -54,6 +56,12 @@ def scattered(count):
 def main():
     assert pyproj.__version__ == "3.8.0" and pyproj.proj_version_str == "9.8.1"
     pyproj.network.set_network_enabled(False)
+    for option in REFUSED:
+        try:
+            Transformer.from_pipeline(f"+proj=isea +R=1 {option}")
+        except pyproj.exceptions.ProjError:
+            continue
+        raise AssertionError(f"PROJ accepts {option}")
     # The face centres' latitudes, and their vertices' (the icosahedron in the default
     # orientation has vertices at +-26.565 and +-90 degrees of its own frame).
     e_lat = math.degrees(math.atan((3 + math.sqrt(5)) / 4))
@@ -95,7 +103,8 @@ def main():
             # edges and outside it; fewer where PROJ refuses them all.
             radius = target_crs.ellipsoid.semi_major_metre
             step = 4 if invertible else 2
-            unit = [(x / step, y / step) for x in range(-14 * step // 4, 14 * step // 4 + 1) for y in range(-6 * step // 4, 6 * step // 4 + 1)]
+            x_max, y_max = 14 * step // 4, 6 * step // 4
+            unit = [(x / step, y / step) for x in range(-x_max, x_max + 1) for y in range(-y_max, y_max + 1)]
             inverse_points = [[(x0 + x * radius) / factor, (y0 + y * radius) / factor] for x, y in unit]
             inverse_samples = [[point, transformed(inverse, point)] for point in inverse_points]
             cases.append(
