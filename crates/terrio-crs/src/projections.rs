@@ -3329,10 +3329,10 @@ impl Proj for Qsc {
             face => {
                 // Through cartesian coordinates on the unit sphere.
                 let mut q = cosphi;
-                let mut t = q * q;
-                let mut s = if t >= 1.0 { 0.0 } else { (1.0 - t).sqrt() * theta.sin() };
-                t += s * s;
-                let mut r = if t >= 1.0 { 0.0 } else { (1.0 - t).sqrt() };
+                let mut u = q * q;
+                let mut s = if u >= 1.0 { 0.0 } else { (1.0 - u).sqrt() * theta.sin() };
+                u += s * s;
+                let mut r = if u >= 1.0 { 0.0 } else { (1.0 - u).sqrt() };
                 // Into the area, then into the cube face.
                 match area {
                     QscArea::A1 => (r, s) = (-s, r),

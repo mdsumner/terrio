@@ -79,7 +79,9 @@ def main():
                         )
                         assert error <= 0.001, f"forward {error} metres"
                         maximum_forward = max(maximum_forward, error)
-            inverse_points = [p for p in expected if p is not None] + [
+            # PROJ refuses no qsc point, so the indices of the samples hold here.
+            assert all(p is not None for p in expected), "PROJ refused a point"
+            inverse_points = expected + [
                 s[0] for s in case["inverse_samples"]
             ]
             expected_inverse = [oracle(inverse, p) for p in inverse_points]
@@ -99,6 +101,7 @@ def main():
                         # At the antipode of the face centre the inverse goes through acos near
                         # 180 degrees: terrio's point is checked by its projection.
                         again = oracle(forward, got)
+                        assert again is not None, "the inverse does not project back"
                         residual = max(abs(a - b) for a, b in zip(again, point, strict=True))
                         assert residual * case["metres_per_unit"] <= 0.001 and error <= 1e-5, (
                             f"inverse at the antipode {error} degrees"

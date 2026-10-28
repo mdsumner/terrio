@@ -695,7 +695,7 @@ degrees inverse.
 projection centre (`+lat_0` of at least 67.5 degrees north or south for the top or bottom face,
 otherwise `+lon_0` within 45 degrees of 0, 90, 180 or -90 for the front, right, back or left
 face). PROJ's face centres are those values exactly; for other centres, `+lon_0` stays the
-central meridian. On an ellipsoid, latitudes are taken as
+central meridian. On an ellipsoid, geodetic latitudes are converted to
 geocentric latitudes on a sphere of the semi-major axis, as in PROJ. The whole globe projects
 onto the plane of the face, with no refusals; `+units`, `+x_0` and `+y_0` apply. The inverse at
 the point opposite the face centre is sensitive to rounding: a change of 1e-15 in the northing
