@@ -37,19 +37,24 @@ impl Rotation {
         if let Some(other) = p.keys().find(|k| k.starts_with("o_") && !KNOWN.contains(k)) {
             return Err(err(&format!("+proj=ob_tran with +{other}")));
         }
-        let angle = |k: &str| p.angle(k).unwrap_or(0.0);
+        // An absent angle is 0; one that does not read as an angle is refused (PROJ reads it as 0).
+        let angle = |k: &str| match p.angle(k) {
+            Some(v) => Ok(v),
+            None if !p.has(k) => Ok(0.0),
+            None => Err(invalid(&format!("+{k} is not an angle"))),
+        };
         let (lamp, phip) = if p.has("o_alpha") {
-            let (lamc, phic, alpha) = (angle("o_lon_c"), angle("o_lat_c"), angle("o_alpha"));
+            let (lamc, phic, alpha) = (angle("o_lon_c")?, angle("o_lat_c")?, angle("o_alpha")?);
             if (phic.abs() - HALFPI).abs() <= TOL {
                 return Err(invalid("|o_lat_c| should be < 90 degrees"));
             }
             (lamc + (-alpha.cos()).atan2(-alpha.sin() * phic.sin()), aasin(phic.cos() * alpha.sin()))
         } else if p.has("o_lat_p") {
-            (angle("o_lon_p"), angle("o_lat_p"))
+            (angle("o_lon_p")?, angle("o_lat_p")?)
         } else if !["o_lon_1", "o_lat_1", "o_lon_2", "o_lat_2"].iter().any(|k| p.has(k)) {
             return Err(invalid("no pole: give +o_lat_p, +o_lon_c, +o_lat_c and +o_alpha, or +o_lon_1, +o_lat_1, +o_lon_2 and +o_lat_2"));
         } else {
-            let (lam1, phi1, lam2, phi2) = (angle("o_lon_1"), angle("o_lat_1"), angle("o_lon_2"), angle("o_lat_2"));
+            let (lam1, phi1, lam2, phi2) = (angle("o_lon_1")?, angle("o_lat_1")?, angle("o_lon_2")?, angle("o_lat_2")?);
             if phi1.abs() > HALFPI - TOL || phi2.abs() > HALFPI - TOL {
                 return Err(invalid("|o_lat_1| and |o_lat_2| should be < 90 degrees"));
             }
