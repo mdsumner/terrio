@@ -228,8 +228,9 @@ pub(crate) fn to_proj(root: &Node) -> Option<Converted> {
     let k = get(&["scalefactor", "scalefactoratnaturalorigin", "scalefactoroninitialline"]);
     let sp1 = angle(&["standardparallel1", "standardparallel", "latitudeof1ststandardparallel"]);
     let sp2 = angle(&["standardparallel2", "latitudeof2ndstandardparallel"]);
-    let fe = get(&["falseeasting", "eastingatfalseorigin", "eastingatprojectioncentre"]).unwrap_or(0.0) * to_meter;
-    let fn_ = get(&["falsenorthing", "northingatfalseorigin", "northingatprojectioncentre"]).unwrap_or(0.0) * to_meter;
+    // `x_0` and `y_0` are ESRI's names for them in PROJ's own methods (`PROJ_healpix`).
+    let fe = get(&["falseeasting", "eastingatfalseorigin", "eastingatprojectioncentre", "x0"]).unwrap_or(0.0) * to_meter;
+    let fn_ = get(&["falsenorthing", "northingatfalseorigin", "northingatprojectioncentre", "y0"]).unwrap_or(0.0) * to_meter;
     let azimuth = angle(&["azimuth", "azimuthofinitialline"]);
     let gamma = angle(&["rectifiedgridangle", "angleofrectifiedtoskewedgrid"]);
     let method = norm(root.child("PROJECTION")?.name()?);
@@ -526,6 +527,18 @@ pub(crate) fn to_proj(root: &Node) -> Option<Converted> {
             push(&mut out, "lon_0", lon_0);
         }
         "goodehomolosine" => return None,
+        // HEALPix and rHEALPix in ESRI's form of PROJ's own methods, with their PROJ parameters.
+        "projhealpix" => {
+            out.push("+proj=healpix".into());
+            push(&mut out, "lon_0", angle(&["lon0"]));
+            push(&mut out, "rot_xy", angle(&["rotxy"]));
+        }
+        "projrhealpix" => {
+            out.push("+proj=rhealpix".into());
+            push(&mut out, "lon_0", angle(&["lon0"]));
+            push(&mut out, "north_square", get(&["northsquare"]));
+            push(&mut out, "south_square", get(&["southsquare"]));
+        }
         // World projections of a central meridian, as terrio writes them.
         m => {
             let (proj, _) = super::wkt1_write::WORLD.iter().find(|(_, w)| norm(w) == m)?;
