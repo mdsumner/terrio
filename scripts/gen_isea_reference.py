@@ -84,8 +84,17 @@ def main():
                 assert projected is not None, (target, point)
                 assert agree(projected, transformed(operation, point), factor, 1e-6), (target, point)
                 samples.append([*point, projected, transformed(inverse, projected)])
-            # PROJ's inverse is defined exactly where the generator expects it.
-            assert all((s[3] is not None) == invertible for s in samples if abs(s[1]) < 60 and figure[1] == "R"), target
+            # PROJ's inverse is defined exactly in the expected configurations: on the sphere at every
+            # sample, poles included. On the ellipsoid the forward takes the semi-major axis and the
+            # inverse the authalic radius, so some projected points fall outside the triangles and
+            # are refused; the others are not.
+            defined = [s[3] is not None for s in samples]
+            if not invertible:
+                assert not any(defined), target
+            elif figure.startswith("+R="):
+                assert all(defined), target
+            else:
+                assert sum(defined) > len(defined) // 2, target
             # Points of the plane in units of the radius, inside the unfolded icosahedron, on its
             # edges and outside it; fewer where PROJ refuses them all.
             radius = target_crs.ellipsoid.semi_major_metre

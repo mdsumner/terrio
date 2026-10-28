@@ -857,7 +857,9 @@ the face centres and vertices, and 100 points spread over the sphere; and PROJ's
 projected point. Inverse points over and around the unfolded icosahedron (377 where PROJ's
 inverse is defined, 105 elsewhere) are checked too. Each configuration has GDAL's WKT1, ESRI
 WKT1 and WKT2 as PROJ writes them. The generator checks that pyproj's CRS route is PROJ's
-operation itself, and that PROJ's inverse is defined exactly for the expected configurations.
+operation itself, and that PROJ's inverse is defined only for the expected configurations: on
+the sphere at every sample, on WGS 84 at most samples (its forward takes the semi-major axis and
+its inverse the authalic radius, so some projected points fall outside the triangles).
 The `method-isea` fixture of rust-proj-capability is from PROJ 9.9.0, whose `isea` is a new
 method (see the CRS page), and is not used.
 

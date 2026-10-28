@@ -387,11 +387,7 @@ pub(crate) fn to_proj(root: &Node) -> Result<Converted> {
             match k.as_str() {
                 "x_0" => fe = *v,
                 "y_0" => fn_ = *v,
-                // The figure, datum, units and axes come from the CRS, not from the method.
-                "proj" | "ellps" | "datum" | "a" | "b" | "rf" | "f" | "es" | "e" | "R" | "R_A" | "units" | "to_meter" | "towgs84"
-                | "nadgrids" | "geoidgrids" | "init" | "type" | "pm" | "axis" | "no_defs" | "wktext" | "over" => {
-                    return Err(bad(&format!("parameter '{k}' of the method 'PROJ {proj}'")));
-                }
+                k if RESERVED.contains(&k) => return Err(bad(&format!("parameter '{k}' of the method 'PROJ {proj}'"))),
                 _ => push(k, Some(*v)),
             }
         }
@@ -480,6 +476,34 @@ fn derived(root: &Node, conv: &Node) -> Result<Converted> {
     Ok(geog.converted(out.join(" ")))
 }
 
+/// PROJ parameters a `PROJ name` method may not set: the figure, datum, units and axes come from
+/// the CRS, not from the method.
+pub(crate) const RESERVED: [&str; 23] = [
+    "proj",
+    "ellps",
+    "datum",
+    "a",
+    "b",
+    "rf",
+    "f",
+    "es",
+    "e",
+    "R",
+    "R_A",
+    "units",
+    "to_meter",
+    "towgs84",
+    "nadgrids",
+    "geoidgrids",
+    "init",
+    "type",
+    "pm",
+    "axis",
+    "no_defs",
+    "wktext",
+    "over",
+];
+
 /// A PROJ projection and its parameters by their PROJ names.
 type ProjMethod = (String, Vec<(String, f64)>);
 
@@ -496,16 +520,24 @@ fn proj_method(conv: &Node, method: &Node, ang: f64, to_meter: f64) -> Result<Op
         Some(w) if word(w) => w.to_string(),
         _ => return Ok(None),
     };
+    let mut keys: Vec<&str> = Vec::new();
     for w in words {
         match w.split_once('=') {
-            Some((k, v)) if word(k) && word(v) => name.push_str(&format!(" +{k}={v}")),
+            Some((k, v)) if word(k) && word(v) => {
+                // The false origin is a PARAMETER, and the name sets no parameter twice.
+                if RESERVED.contains(&k) || matches!(k, "x_0" | "y_0") || keys.contains(&k) {
+                    return Err(bad(&format!("parameter '{k}' of the method 'PROJ {}'", method.name().unwrap_or(""))));
+                }
+                keys.push(k);
+                name.push_str(&format!(" +{k}={v}"));
+            }
             _ => return Ok(None),
         }
     }
     let mut params = Vec::new();
     for n in conv.children("PARAMETER") {
         let key = n.name().unwrap_or("");
-        if key.is_empty() || !key.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'_') {
+        if key.is_empty() || !key.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'_') || keys.contains(&key) {
             return Err(bad(&format!("parameter '{key}' of the method 'PROJ {name}'")));
         }
         let v = n.num(1).ok_or_else(|| bad(&format!("parameter '{key}' without a value")))?;

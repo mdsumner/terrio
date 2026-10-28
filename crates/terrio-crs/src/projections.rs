@@ -3840,6 +3840,7 @@ impl Isea {
         }
         let resolution = if s.p.has("resolution") { proj_int(s.p, "isea", "resolution")? } else { 4 };
         let aperture = if s.p.has("aperture") { proj_int(s.p, "isea", "aperture")? } else { 3 };
+        // PROJ compares the orientation exactly: a tolerance would define an inverse PROJ refuses.
         let orientation = if o_az != 0.0 || aperture != 3 || resolution != 4 {
             None
         } else if o_lat == ISEA_STD_LAT && o_lon == ISEA_STD_LONG {

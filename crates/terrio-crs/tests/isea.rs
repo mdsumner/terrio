@@ -82,3 +82,54 @@ fn invalid_and_grid_address_options_are_refused() {
         assert!(SpatialRef::parse(&crs).and_then(|t| Transformer::new(&lonlat, &t)).is_ok(), "{crs}");
     }
 }
+
+#[test]
+fn wkt2_method_name_parameters_are_checked() {
+    let wkt = |method: &str| {
+        format!(
+            "PROJCRS[\"unknown\",BASEGEOGCRS[\"unknown\",DATUM[\"unknown\",ELLIPSOID[\"unknown\",6371007.18091847,0,\
+             LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433]]],\
+             CONVERSION[\"unknown\",METHOD[\"{method}\"],PARAMETER[\"x_0\",0,LENGTHUNIT[\"metre\",1]]],\
+             CS[Cartesian,2],AXIS[\"(E)\",east,ORDER[1],LENGTHUNIT[\"metre\",1]],\
+             AXIS[\"(N)\",north,ORDER[2],LENGTHUNIT[\"metre\",1]]]"
+        )
+    };
+    let lonlat = SpatialRef::parse("+proj=longlat +R=6371007.18091847").unwrap();
+    let transformer = |method: &str| SpatialRef::parse(&wkt(method)).and_then(|t| Transformer::new(&lonlat, &t));
+    assert!(transformer("PROJ isea orient=pole").is_ok());
+    // The figure, datum, units and grids come from the CRS, and the false origin is a PARAMETER.
+    for method in [
+        "PROJ isea proj=merc",
+        "PROJ isea nadgrids=grid",
+        "PROJ isea units=km",
+        "PROJ isea R=1",
+        "PROJ isea x_0=1",
+        "PROJ isea orient=pole orient=isea",
+    ] {
+        assert!(transformer(method).is_err(), "{method}");
+    }
+}
+
+#[test]
+fn esri_method_name_parameters_are_checked() {
+    let wkt = |projection: &str| {
+        format!(
+            "PROJCS[\"unknown\",GEOGCS[\"GCS_unknown\",DATUM[\"D_unknown\",SPHEROID[\"unknown\",6371007.18091847,0.0]],\
+             PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"{projection}\"],\
+             PARAMETER[\"x_0\",0.0],PARAMETER[\"y_0\",0.0],UNIT[\"Meter\",1.0]]"
+        )
+    };
+    let lonlat = SpatialRef::parse("+proj=longlat +R=6371007.18091847").unwrap();
+    let transformer = |projection: &str| SpatialRef::parse(&wkt(projection)).and_then(|t| Transformer::new(&lonlat, &t));
+    assert!(transformer("PROJ_isea_orient=pole").is_ok());
+    // As for WKT 2, and the numeric parameters come from their own PARAMETERs.
+    for projection in [
+        "PROJ_isea_proj=merc",
+        "PROJ_isea_nadgrids=grid",
+        "PROJ_isea_units=km",
+        "PROJ_isea_resolution=5",
+        "PROJ_isea_orient=pole_orient=isea",
+    ] {
+        assert!(transformer(projection).is_err(), "{projection}");
+    }
+}
