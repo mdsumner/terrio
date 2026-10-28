@@ -409,13 +409,13 @@ impl Def {
                 return Err(Error::Crs("invalid +proj=ob_tran: +o_proj=ob_tran".into()));
             }
             // A projected ob_tran (+o_proj other than longlat) applies the CRS's figure, central
-            // meridian and false easting and northing, as PROJ does. The rotated projection's own
-            // formulas use the parameters its setup reads (+lat_0, +lat_ts, scale); the CRS values
-            // that the definition applies outside them are restored afterwards.
-            let (ell, phi0, lam0, x0, y0) = (setup.ell, setup.phi0, setup.lam0, setup.x0, setup.y0);
-            let link = projections::build(o_proj, &mut setup)?
+            // meridian and false easting and northing, as PROJ does. The rotated projection is built
+            // on a copy of the setup, so what its formulas read (+lat_0, +lat_ts, scale) and change
+            // stays with it.
+            let mut inner =
+                Setup { p: setup.p, ell: setup.ell, phi0: setup.phi0, lam0: setup.lam0, k0: setup.k0, x0: setup.x0, y0: setup.y0 };
+            let link = projections::build(o_proj, &mut inner)?
                 .ok_or_else(|| Error::Crs(format!("unsupported projection: +proj=ob_tran with +o_proj={o_proj}")))?;
-            (setup.ell, setup.phi0, setup.lam0, setup.x0, setup.y0) = (ell, phi0, lam0, x0, y0);
             Some(Arc::new(ObTran { rot, link }))
         } else {
             match projections::build(name, &mut setup)? {

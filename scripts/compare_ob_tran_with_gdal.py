@@ -47,6 +47,16 @@ def past_pole(case, point):
     return case["refuses_past_pole"] and abs(northing) > math.pi / 2
 
 
+def ellipsoidal_eqc():
+    """Whether GDAL's PROJ has the ellipsoidal eqc (older PROJ applies the spherical formulas)."""
+    source, target = osr.SpatialReference(), osr.SpatialReference()
+    source.SetFromUserInput("+proj=longlat +datum=WGS84")
+    target.SetFromUserInput("+proj=eqc +datum=WGS84")
+    source.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+    northing = osr.CoordinateTransformation(source, target).TransformPoint(0, 45)[1]
+    return abs(northing - 6378137 * math.pi / 4) > 1000
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("data", nargs="?")
@@ -61,6 +71,10 @@ def main():
     )
     results = []
     for case in reference["cases"]:
+        if "+o_proj=eqc " in case["target"] and "+datum=" in case["target"] and not ellipsoidal_eqc():
+            detail = "this PROJ has no ellipsoidal eqc (PROJ 9.8.1, which the corpus uses, does)"
+            results.append(dict(name=case["name"], status="not compared", detail=detail))
+            continue
         try:
             definitions = []
             for text in [case["source"], case["target"]]:

@@ -63,6 +63,9 @@ impl Rotation {
                 .atan2(phi1.sin() * phi2.cos() * lam2.sin() - phi1.cos() * phi2.sin() * lam1.sin());
             (lamp, (-(lamp - lam1).cos() / phi1.tan()).atan())
         };
+        if !(phip.is_finite() && lamp.is_finite()) {
+            return Err(invalid("the pole must be finite"));
+        }
         // PROJ's transverse case, its own formulas, which are the oblique ones at a pole latitude
         // of 0.
         let (sphip, cphip) = if phip.abs() > TOL { phip.sin_cos() } else { (0.0, 1.0) };
@@ -139,9 +142,13 @@ mod tests {
 
     #[test]
     fn refuses_other_forms() {
-        for s in
-            ["+proj=ob_tran +o_lat_p=40", "+proj=ob_tran +o_proj=longlat +o_lat_p=40 +o_foo=1", "+proj=ob_tran +o_proj=longlat +o_lon_1=10"]
-        {
+        for s in [
+            "+proj=ob_tran +o_lat_p=40",
+            "+proj=ob_tran +o_proj=longlat +o_lat_p=40 +o_foo=1",
+            "+proj=ob_tran +o_proj=longlat +o_lon_1=10",
+            "+proj=ob_tran +o_proj=moll +o_lat_p=nan",
+            "+proj=ob_tran +o_proj=moll +o_lat_p=45 +o_lon_p=inf",
+        ] {
             assert!(Rotation::from_params(&Params::parse(s)).is_err(), "{s}");
         }
     }
