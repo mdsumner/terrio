@@ -43,8 +43,16 @@ fn every_face_figure_and_unit_matches_frozen_proj() {
         let name = case["name"].as_str().unwrap();
         let source = SpatialRef::parse(case["source"].as_str().unwrap()).unwrap();
         let factor = case["metres_per_unit"].as_f64().unwrap();
-        for encoding in ["target", "wkt1", "wkt1_esri", "wkt2"] {
-            let target = SpatialRef::parse(case[encoding].as_str().unwrap()).unwrap_or_else(|e| panic!("{name} {encoding}: {e}"));
+        // terrio's own WKT1, written from the PROJ string, is checked as the others, without its
+        // PROJ4 extension so that the parameters themselves are read.
+        let written = SpatialRef::parse(case["target"].as_str().unwrap()).unwrap().to_wkt().unwrap();
+        let written = match written.find(",EXTENSION[\"PROJ4\"") {
+            Some(i) => format!("{}]", &written[..i]),
+            None => written,
+        };
+        for encoding in ["target", "wkt1", "wkt1_esri", "wkt2", "written"] {
+            let text = if encoding == "written" { written.as_str() } else { case[encoding].as_str().unwrap() };
+            let target = SpatialRef::parse(text).unwrap_or_else(|e| panic!("{name} {encoding}: {e}"));
             let forward = Transformer::new(&source, &target).unwrap();
             let inverse = Transformer::new(&target, &source).unwrap();
             let antipodal: Vec<usize> =
