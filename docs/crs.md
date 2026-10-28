@@ -708,4 +708,5 @@ for other projections without an EPSG method.
 
 The `method-qsc` fixture keeps its PROJ 9.9.0 oracle. A PROJ 9.8.1 corpus covers 16
 configurations and 4,288 samples (see Testing). Allowances are 1 mm projected and 1e-8 degrees
-inverse.
+inverse. At the point opposite the face centre the inverse is allowed 1e-5 degrees, and must
+project back within 1 mm.
