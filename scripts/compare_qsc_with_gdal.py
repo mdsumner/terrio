@@ -99,6 +99,7 @@ def main():
                     * case["metres_per_unit"]
                 )
                 assert error <= 0.001, f"GDAL through terrio's WKT1: {error} metres"
+                maximum_forward = max(maximum_forward, error)
             inverse_points = expected + [s[0] for s in case["inverse_samples"]]
             expected_inverse = [oracle(inverse, p) for p in inverse_points]
             actual = native(args.terrio, case["target"], case["source"], inverse_points)
@@ -120,6 +121,7 @@ def main():
                         assert residual * case["metres_per_unit"] <= 0.001 and error <= 1e-5, (
                             f"inverse at the antipode {error} degrees"
                         )
+                        maximum_inverse = max(maximum_inverse, error)
                         continue
                     assert error <= 1e-8, f"inverse {error} degrees"
                     maximum_inverse = max(maximum_inverse, error)
