@@ -810,6 +810,8 @@ cargo test -p terrio-cli --test mcp quadrilateralized
 python -m pytest python/tests/test_qsc.py
 node --test --test-name-pattern='quadrilateralized' js/tests/node.test.mjs
 python scripts/conformance.py ../terrio-data --only qsc --strict
+```
+
 ## HEALPix and rHEALPix coverage (#272)
 
 `healpix_benchmark.json` retains `method-healpix` and `method-rhealpix` from rust-proj-capability
@@ -820,7 +822,7 @@ PROJ 9.8.1, without network access: 10 configurations (`healpix` with `rot_xy` 0
 false offsets) on a sphere and on WGS 84, and two on an ellipsoid of flattening 1/40, where PROJ
 computes the authalic latitude in closed form and refines its inverse. Each has 300 geographic
 samples, every 30 degrees from the central meridian at 17 latitudes including the poles and each
-side of the polar caps' edge latitude, and each side of the caps' edges and middles; and 13
+side of the polar caps' edge latitude, and each side of the caps' edges and middles; and 14
 inverse points inside, on the edge of and outside the image. Each configuration has GDAL's WKT1,
 ESRI WKT1 and WKT2 as PROJ writes them. The generator checks that pyproj's CRS route is PROJ's
 operation itself.

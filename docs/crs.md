@@ -720,7 +720,9 @@ and `+south_square` (0 to 3, the default 0) pick the equatorial square below whi
 places each polar square, and other values are refused, as in PROJ. On an ellipsoid the
 latitude is the authalic latitude and the image is scaled by the authalic radius, as in PROJ
 9.8.1 (PROJ 9.4 differs by 0.18 m on WGS 84 at the south pole). `+lon_0`, `+units`,
-`+x_0` and `+y_0` apply. The inverse refuses points outside the image, as PROJ's does.
+`+x_0` and `+y_0` apply. The inverse refuses points outside the image, as PROJ's does. As in
+PROJ, whose point-in-polygon test leaves out the polygon's closing edge, the `rhealpix` inverse
+accepts points left of the image between the polar squares, such as (-4, 0) on the unit sphere.
 
 GDAL's WKT1 (`custom_proj4`, which carries the PROJ string), ESRI's `PROJ_healpix` and
 `PROJ_rhealpix`, and PROJ's WKT2 methods `PROJ healpix` and `PROJ rhealpix` are read; terrio

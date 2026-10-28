@@ -104,7 +104,7 @@ def main():
             back = transformed(inverse, projected) if projected else None
             samples.append([*point, projected, back])
         radius = target_crs.ellipsoid.semi_major_metre
-        # Points in the image, on its edges and outside it (PROJ refuses those).
+        # Points in the image, on its edges and outside it.
         unit = [
             (0, 0),
             (3, 0.5),
@@ -119,6 +119,8 @@ def main():
             (-0.5, -2.3),
             (1, 2.5),
             (0.3, -0.75),
+            # Left of the image: PROJ's rHEALPix inverse accepts it (see docs/crs.md).
+            (-4, 0),
         ]
         inverse_points = [[(x0 + x * radius) / factor, (y0 + y * radius) / factor] for x, y in unit]
         inverse_samples = [[point, transformed(inverse, point)] for point in inverse_points]
