@@ -3154,23 +3154,23 @@ struct Healpix {
 impl Healpix {
     fn new(s: &Setup<'_>, rhealpix: bool) -> Result<Self> {
         let squares = if rhealpix {
-            // pj_param's integer: the leading digits, or 0.
-            let int = |key: &str| {
-                let v = s.p.str(key).unwrap_or("").trim_start();
-                let end = v
-                    .char_indices()
-                    .find(|&(i, c)| !(c.is_ascii_digit() || (i == 0 && (c == '-' || c == '+'))))
-                    .map_or(v.len(), |(i, _)| i);
-                v[..end].parse::<i64>().unwrap_or(0)
+            // pj_param's integer: digits only (else an invalid value), then atoi, which reads a
+            // C long (saturating) and casts it to int.
+            let int = |key: &str| -> Result<i32> {
+                let v = s.p.str(key).unwrap_or("");
+                if !v.bytes().all(|b| b.is_ascii_digit()) {
+                    return Err(err(&format!("rhealpix: invalid {key}, it should be an integer")));
+                }
+                Ok(if v.is_empty() { 0 } else { v.parse::<i64>().unwrap_or(i64::MAX) as i32 })
             };
-            let (north, south) = (int("north_square"), int("south_square"));
+            let (north, south) = (int("north_square")?, int("south_square")?);
             if !(0..=3).contains(&north) {
                 return Err(err("rhealpix: invalid north_square, it should be in [0,3]"));
             }
             if !(0..=3).contains(&south) {
                 return Err(err("rhealpix: invalid south_square, it should be in [0,3]"));
             }
-            Some((north as i32, south as i32))
+            Some((north, south))
         } else {
             None
         };

@@ -97,9 +97,27 @@ fn every_configuration_figure_and_unit_matches_frozen_proj() {
 
 #[test]
 fn polar_squares_outside_zero_to_three_are_refused() {
-    for bad in ["+north_square=4", "+south_square=-1", "+north_square=7 +south_square=1"] {
+    // PROJ 9.8.1 takes digits only, then atoi: a C long, saturating, cast to int.
+    let bad = [
+        "+north_square=4",
+        "+south_square=-1",
+        "+north_square=7 +south_square=1",
+        "+south_square=+2",
+        "+south_square=2abc",
+        "+north_square=2147483648",
+        "+north_square=99999999999999999999",
+    ];
+    let lonlat = SpatialRef::parse("+proj=longlat +R=1").unwrap();
+    for bad in bad {
         let crs = format!("+proj=rhealpix +R=1 {bad}");
-        assert!(SpatialRef::parse(&crs).and_then(|t| Transformer::new(&SpatialRef::parse("+proj=longlat +R=1")?, &t)).is_err(), "{crs}");
+        assert!(SpatialRef::parse(&crs).and_then(|t| Transformer::new(&lonlat, &t)).is_err(), "{crs}");
+    }
+    // These are square 0, as in PROJ.
+    let zero = Transformer::new(&lonlat, &SpatialRef::parse("+proj=rhealpix +R=1").unwrap()).unwrap().transform(10.0, 80.0).unwrap();
+    for same in ["+north_square=4294967296", "+south_square=", "+south_square"] {
+        let crs = format!("+proj=rhealpix +R=1 {same}");
+        let xy = Transformer::new(&lonlat, &SpatialRef::parse(&crs).unwrap()).unwrap().transform(10.0, 80.0).unwrap();
+        assert_eq!(xy, zero, "{crs}");
     }
 }
 
