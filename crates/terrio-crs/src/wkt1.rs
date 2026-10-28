@@ -228,12 +228,13 @@ pub(crate) fn to_proj(root: &Node) -> Option<Converted> {
     let k = get(&["scalefactor", "scalefactoratnaturalorigin", "scalefactoroninitialline"]);
     let sp1 = angle(&["standardparallel1", "standardparallel", "latitudeof1ststandardparallel"]);
     let sp2 = angle(&["standardparallel2", "latitudeof2ndstandardparallel"]);
+    let method = norm(root.child("PROJECTION")?.name()?);
     // `x_0` and `y_0` are ESRI's names for them in PROJ's own methods (`PROJ_healpix`).
-    let fe = get(&["falseeasting", "eastingatfalseorigin", "eastingatprojectioncentre", "x0"]).unwrap_or(0.0) * to_meter;
-    let fn_ = get(&["falsenorthing", "northingatfalseorigin", "northingatprojectioncentre", "y0"]).unwrap_or(0.0) * to_meter;
+    let (x0, y0): (&[&str], &[&str]) = if method.starts_with("proj") { (&["x0"], &["y0"]) } else { (&[], &[]) };
+    let fe = get(&[&["falseeasting", "eastingatfalseorigin", "eastingatprojectioncentre"][..], x0].concat()).unwrap_or(0.0) * to_meter;
+    let fn_ = get(&[&["falsenorthing", "northingatfalseorigin", "northingatprojectioncentre"][..], y0].concat()).unwrap_or(0.0) * to_meter;
     let azimuth = angle(&["azimuth", "azimuthofinitialline"]);
     let gamma = angle(&["rectifiedgridangle", "angleofrectifiedtoskewedgrid"]);
-    let method = norm(root.child("PROJECTION")?.name()?);
     let push = |out: &mut Vec<String>, k: &str, v: Option<f64>| {
         if let Some(v) = v {
             out.push(format!("+{k}={v}"));

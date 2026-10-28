@@ -102,3 +102,17 @@ fn polar_squares_outside_zero_to_three_are_refused() {
         assert!(SpatialRef::parse(&crs).and_then(|t| Transformer::new(&SpatialRef::parse("+proj=longlat +R=1")?, &t)).is_err(), "{crs}");
     }
 }
+
+#[test]
+fn x_0_and_y_0_are_read_only_for_proj_methods() {
+    // ESRI names the false origin x_0 and y_0 in PROJ's own methods only; elsewhere they are not
+    // parameters and do not move the origin.
+    let mercator = r#"PROJCS["m",GEOGCS["g",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Mercator"],PARAMETER["central_meridian",0.0],PARAMETER["standard_parallel_1",0.0],PARAMETER["x_0",1000.0],PARAMETER["y_0",2000.0],UNIT["Meter",1.0]]"#;
+    let source = SpatialRef::parse("+proj=longlat +datum=WGS84").unwrap();
+    let origin = Transformer::new(&source, &SpatialRef::parse(mercator).unwrap()).unwrap().transform(0.0, 0.0).unwrap();
+    assert!(origin.0.abs() < 1e-9 && origin.1.abs() < 1e-9, "{origin:?}");
+    let healpix = r#"PROJCS["h",GEOGCS["g",DATUM["D_unknown",SPHEROID["unknown",6371000.0,0.0]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["PROJ_healpix"],PARAMETER["lon_0",0.0],PARAMETER["rot_xy",0.0],PARAMETER["x_0",1000.0],PARAMETER["y_0",2000.0],UNIT["Meter",1.0]]"#;
+    let source = SpatialRef::parse("+proj=longlat +R=6371000").unwrap();
+    let origin = Transformer::new(&source, &SpatialRef::parse(healpix).unwrap()).unwrap().transform(0.0, 0.0).unwrap();
+    assert!((origin.0 - 1000.0).abs() < 1e-6 && (origin.1 - 2000.0).abs() < 1e-6, "{origin:?}");
+}
