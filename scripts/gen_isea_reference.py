@@ -32,10 +32,6 @@ def transformed(operation, point):
     return list(result) if all(map(math.isfinite, result)) else None
 
 
-def wrap(lon):
-    return (lon + 180) % 360 - 180
-
-
 def agree(a, b, factor, tolerance):
     """Whether two projected points agree within a tolerance in metres."""
     if a is None or b is None:

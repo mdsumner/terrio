@@ -170,6 +170,10 @@
   the inverse uses the authalic radius. `+mode=di`, `dd` and `hex` (grid
   addresses) are refused. GDAL's WKT1 (which carries the PROJ string), ESRI's
   `PROJ_isea` and WKT2 `PROJ isea` are read, and the first is written.
+- WKT2 `PROJ name` methods take only the projection's string-valued parameters
+  in the name (`o_proj` for `ob_tran`, `orient` and `mode` for `isea`), and refuse
+  `R_C`, `geoc`, `vunits` and `vto_meter` among their PARAMETERs, as they refused
+  the figure, datum and units before.
 
 ### Warp
 
