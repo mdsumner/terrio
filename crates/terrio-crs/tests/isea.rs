@@ -60,7 +60,7 @@ fn every_configuration_figure_and_unit_matches_frozen_proj() {
 #[test]
 fn invalid_and_grid_address_options_are_refused() {
     let lonlat = SpatialRef::parse("+proj=longlat +R=1").unwrap();
-    // PROJ 9.8.1 refuses the first seven, as gen_isea_reference.py checks. The grid addresses of
+    // PROJ 9.8.1 refuses the first eight, as gen_isea_reference.py checks. The grid addresses of
     // +mode=di, dd and hex are not coordinates, and terrio does not compute them.
     for bad in [
         "+orient=foo",
@@ -70,6 +70,7 @@ fn invalid_and_grid_address_options_are_refused() {
         "+resolution=4.0",
         "+aperture=-3",
         "+resolution=99999999999999999999x",
+        "+azi=30x",
         "+mode=di",
         "+mode=dd",
         "+mode=hex",
@@ -77,7 +78,7 @@ fn invalid_and_grid_address_options_are_refused() {
         let crs = format!("+proj=isea +R=1 {bad}");
         assert!(SpatialRef::parse(&crs).and_then(|t| Transformer::new(&lonlat, &t)).is_err(), "{crs}");
     }
-    for good in ["+orient=isea", "+orient=pole", "+mode=plane", "+resolution=4 +aperture=3", "+resolution"] {
+    for good in ["+orient=isea", "+orient=pole", "+mode=plane", "+resolution=4 +aperture=3", "+resolution", "+azi"] {
         let crs = format!("+proj=isea +R=1 {good}");
         assert!(SpatialRef::parse(&crs).and_then(|t| Transformer::new(&lonlat, &t)).is_ok(), "{crs}");
     }

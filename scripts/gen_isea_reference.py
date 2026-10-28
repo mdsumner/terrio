@@ -23,7 +23,16 @@ CONFIGURATIONS = [
     ("+lon_0=11.25", "m", 0, 0, True),
 ]
 # Options PROJ refuses, which tests/isea.rs expects terrio to refuse too.
-REFUSED = ["+orient=foo", "+orient", "+mode=foo", "+mode", "+resolution=4.0", "+aperture=-3", "+resolution=99999999999999999999x"]
+REFUSED = [
+    "+orient=foo",
+    "+orient",
+    "+mode=foo",
+    "+mode",
+    "+resolution=4.0",
+    "+aperture=-3",
+    "+resolution=99999999999999999999x",
+    "+azi=30x",
+]
 # The authalic sphere of WGS 84, and WGS 84: PROJ's forward takes the geodetic latitude on the
 # unit sphere and scales it by the semi-major axis, its inverse uses the authalic radius.
 FIGURES = ["+R=6371007.1809184747", "+datum=WGS84"]
@@ -58,8 +67,8 @@ def main():
     pyproj.network.set_network_enabled(False)
     for option in REFUSED:
         try:
-            Transformer.from_pipeline(f"+proj=isea +R=1 {option}")
-        except pyproj.exceptions.ProjError:
+            CRS(f"+proj=isea +R=1 {option}")
+        except pyproj.exceptions.CRSError:
             continue
         raise AssertionError(f"PROJ accepts {option}")
     # The face centres' latitudes, and their vertices' (the icosahedron in the default

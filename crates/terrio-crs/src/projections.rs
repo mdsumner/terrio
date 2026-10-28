@@ -3825,6 +3825,10 @@ impl Isea {
             Some("pole") => (o_lat, o_lon) = (HALFPI, 0.0),
             Some(_) => return Err(err("isea: invalid orient, only isea or pole are supported")),
         }
+        // PROJ refuses `+azi=30x` (and reads a bare `+azi` as 0).
+        if option("azi").is_some_and(|v| !v.is_empty()) && s.p.angle("azi").is_none() {
+            return Err(err("isea: invalid azi, it should be an angle"));
+        }
         let o_az = s.p.angle("azi").unwrap_or(0.0);
         // As in PROJ, `lon_0` both moves the central meridian and rotates the icosahedron.
         if let Some(lon) = s.p.angle("lon_0") {
