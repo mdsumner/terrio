@@ -682,8 +682,8 @@ PROJ strings, GDAL's WKT1 (which carries the PROJ string) and PROJ's WKT2 method
 `PROJ ob_tran o_proj=...` are read; terrio writes the WKT1 form. PROJJSON export refuses
 `ob_tran`. Where a projection's own refusals are stricter than PROJ's, they apply rotated too:
 PROJ's spherical sinusoidal inverse returns a latitude past a pole, which its rotation turns into
-a point, and terrio's refuses it; terrio's Mercator refuses the poles and its `utm` accepts a
-sphere, rotated or not.
+a point, and terrio's refuses it; terrio's Mercator refuses the poles. Where terrio is more
+lenient, that applies rotated too: its `utm` accepts a sphere, which PROJ refuses.
 
 The `seed-ob_tran-moll` fixture keeps its PROJ 9.9.0 oracle. A PROJ 9.8.1 corpus covers
 15 configurations and 4,680 samples (see Testing). Allowances are 1 mm projected and 1e-8

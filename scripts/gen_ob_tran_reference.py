@@ -91,6 +91,8 @@ def main():
                     metres_per_unit=factor,
                     radius_metres=radius,
                     false_northing_metres=y0,
+                    # PROJ's spherical sinu inverse returns latitudes past a pole; terrio refuses them.
+                    refuses_past_pole=o_proj == "sinu" and figure.startswith("+R="),
                     wkt1=target_crs.to_wkt("WKT1_GDAL"),
                     wkt2=target_crs.to_wkt("WKT2_2019"),
                     samples=samples,

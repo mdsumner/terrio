@@ -44,7 +44,7 @@ def native(executable, source, target, points):
 
 def past_pole(case, point):
     northing = (point[1] * case["metres_per_unit"] - case["false_northing_metres"]) / case["radius_metres"]
-    return case["name"].startswith("ob_tran sinu +R=") and abs(northing) > math.pi / 2
+    return case["refuses_past_pole"] and abs(northing) > math.pi / 2
 
 
 def main():

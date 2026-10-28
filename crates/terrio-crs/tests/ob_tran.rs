@@ -74,7 +74,7 @@ fn rotated_projections_pole_forms_figures_and_units_match_frozen_proj() {
                 // sinusoidal refuses it, rotated or not.
                 let northing =
                     (point.1 * factor - case["false_northing_metres"].as_f64().unwrap()) / case["radius_metres"].as_f64().unwrap();
-                let past_pole = name.starts_with("ob_tran sinu +R=") && northing.abs() > std::f64::consts::FRAC_PI_2;
+                let past_pole = case["refuses_past_pole"].as_bool().unwrap() && northing.abs() > std::f64::consts::FRAC_PI_2;
                 if sample[1].is_null() || past_pole {
                     assert!(actual.is_err(), "{name} {encoding}: inverse domain {point:?}: {actual:?}");
                 } else {
@@ -93,5 +93,20 @@ fn definitions_proj_refuses_are_refused() {
         let definition = definition.as_str().unwrap();
         let error = SpatialRef::parse(definition).err().unwrap_or_else(|| panic!("{definition} must be refused"));
         assert!(error.to_string().contains("invalid +proj=ob_tran"), "{definition}: {error}");
+    }
+}
+
+#[test]
+fn conflicting_pole_forms_take_proj_precedence() {
+    // PROJ reads o_alpha first, then o_lat_p, then the two equator points, and ignores the rest.
+    let geographic = SpatialRef::parse("+proj=longlat +R=6371000").unwrap();
+    let base = "+proj=ob_tran +o_proj=moll +R=6371000";
+    for (pole, expected) in [
+        ("+o_lat_p=40 +o_lon_c=10 +o_lat_c=40 +o_alpha=5", (-6182836.2067854805, -4100762.6460430957)),
+        ("+o_lat_p=40 +o_lon_p=20 +o_lon_1=-30 +o_lat_1=20 +o_lon_2=60 +o_lat_2=-10", (3148951.8669416416, 170551.19385131155)),
+    ] {
+        let target = SpatialRef::parse(&format!("{base} {pole}")).unwrap();
+        let actual = Transformer::new(&geographic, &target).unwrap().transform(18.0, 50.0).unwrap();
+        assert!((actual.0 - expected.0).abs() < 0.001 && (actual.1 - expected.1).abs() < 0.001, "{pole}: {actual:?}");
     }
 }
