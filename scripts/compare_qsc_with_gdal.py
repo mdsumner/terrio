@@ -33,9 +33,7 @@ def native(executable, source, target, points):
     for line in result.stdout.splitlines():
         try:
             point = list(map(float, line.split()))
-            output.append(
-                point if len(point) == 2 and all(map(math.isfinite, point)) else None
-            )
+            output.append(point if len(point) == 2 and all(map(math.isfinite, point)) else None)
         except ValueError:
             output.append(None)
     assert len(output) == len(points), result.stdout
@@ -51,9 +49,7 @@ def main():
     osr.UseExceptions()
     osr.SetPROJEnableNetwork(False)
     gdal.PushErrorHandler("CPLQuietErrorHandler")
-    reference = json.loads(
-        (ROOT / "crates/terrio-crs/tests/data/qsc_reference.json").read_text()
-    )
+    reference = json.loads((ROOT / "crates/terrio-crs/tests/data/qsc_reference.json").read_text())
     results = []
     for case in reference["cases"]:
         try:
@@ -81,9 +77,29 @@ def main():
                         maximum_forward = max(maximum_forward, error)
             # PROJ refuses no qsc point, so the indices of the samples hold here.
             assert all(p is not None for p in expected), "PROJ refused a point"
-            inverse_points = expected + [
-                s[0] for s in case["inverse_samples"]
-            ]
+            # GDAL reads the WKT1 that terrio writes, without its PROJ4 extension so that
+            # the parameters themselves are read.
+            described = subprocess.run(
+                [args.terrio, "crs", case["target"], "--wkt"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout
+            written = next(line for line in described.splitlines() if line.startswith("PROJCS["))
+            if ',EXTENSION["PROJ4"' in written:
+                written = written[: written.index(',EXTENSION["PROJ4"')] + "]"
+            reopened = osr.SpatialReference()
+            reopened.SetFromUserInput(written)
+            reopened.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+            through = osr.CreateCoordinateTransformation(definitions[0], reopened)
+            for point, want in zip(points, expected, strict=True):
+                got = oracle(through, point)
+                error = (
+                    max(abs(a - b) for a, b in zip(got, want, strict=True))
+                    * case["metres_per_unit"]
+                )
+                assert error <= 0.001, f"GDAL through terrio's WKT1: {error} metres"
+            inverse_points = expected + [s[0] for s in case["inverse_samples"]]
             expected_inverse = [oracle(inverse, p) for p in inverse_points]
             actual = native(args.terrio, case["target"], case["source"], inverse_points)
             maximum_inverse = 0.0
@@ -93,9 +109,7 @@ def main():
             ):
                 assert (got is None) == (want is None), "inverse domain differs"
                 if want is not None:
-                    dlon = ((got[0] - want[0] + 180) % 360 - 180) * math.cos(
-                        math.radians(want[1])
-                    )
+                    dlon = ((got[0] - want[0] + 180) % 360 - 180) * math.cos(math.radians(want[1]))
                     error = max(abs(dlon), abs(got[1] - want[1]))
                     if i in antipodal:
                         # At the antipode of the face centre the inverse goes through acos near
@@ -109,17 +123,11 @@ def main():
                         continue
                     assert error <= 1e-8, f"inverse {error} degrees"
                     maximum_inverse = max(maximum_inverse, error)
-            status = (
-                "identical"
-                if maximum_forward == maximum_inverse == 0
-                else "within tolerance"
-            )
+            status = "identical" if maximum_forward == maximum_inverse == 0 else "within tolerance"
             detail = f"max forward {maximum_forward} m; inverse {maximum_inverse} deg"
             results.append(dict(name=case["name"], status=status, detail=detail))
         except Exception as error:
-            results.append(
-                dict(name=case["name"], status="differs", detail=repr(error))
-            )
+            results.append(dict(name=case["name"], status="differs", detail=repr(error)))
     gdal.PopErrorHandler()
     print(
         json.dumps(results)
