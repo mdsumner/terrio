@@ -103,11 +103,17 @@ fn wkt2_method_name_parameters_are_checked() {
         "PROJ isea nadgrids=grid",
         "PROJ isea units=km",
         "PROJ isea R=1",
+        "PROJ isea R_C=1",
         "PROJ isea x_0=1",
         "PROJ isea orient=pole orient=isea",
+        "PROJ isea orinet=pole",
+        "PROJ isea azi=30",
     ] {
         assert!(transformer(method).is_err(), "{method}");
     }
+    // And as a PARAMETER.
+    let r_c = wkt("PROJ isea").replace("PARAMETER[\"x_0\"", "PARAMETER[\"R_C\",1],PARAMETER[\"x_0\"");
+    assert!(SpatialRef::parse(&r_c).and_then(|t| Transformer::new(&lonlat, &t)).is_err(), "{r_c}");
 }
 
 #[test]
@@ -122,6 +128,7 @@ fn esri_method_name_parameters_are_checked() {
     let lonlat = SpatialRef::parse("+proj=longlat +R=6371007.18091847").unwrap();
     let transformer = |projection: &str| SpatialRef::parse(&wkt(projection)).and_then(|t| Transformer::new(&lonlat, &t));
     assert!(transformer("PROJ_isea_orient=pole").is_ok());
+    assert!(transformer("PROJ_ISEA_orient=pole").is_ok());
     // As for WKT 2, and the numeric parameters come from their own PARAMETERs.
     for projection in [
         "PROJ_isea_proj=merc",
@@ -129,6 +136,7 @@ fn esri_method_name_parameters_are_checked() {
         "PROJ_isea_units=km",
         "PROJ_isea_resolution=5",
         "PROJ_isea_orient=pole_orient=isea",
+        "PROJ_isea_orinet=pole",
     ] {
         assert!(transformer(projection).is_err(), "{projection}");
     }

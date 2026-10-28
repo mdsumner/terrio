@@ -476,9 +476,9 @@ fn derived(root: &Node, conv: &Node) -> Result<Converted> {
     Ok(geog.converted(out.join(" ")))
 }
 
-/// PROJ parameters a `PROJ name` method may not set: the figure, datum, units and axes come from
-/// the CRS, not from the method.
-pub(crate) const RESERVED: [&str; 23] = [
+/// PROJ parameters a `PROJ name` method may not take as PARAMETERs: the figure, datum, units and
+/// axes come from the CRS, not from the method.
+const RESERVED: [&str; 27] = [
     "proj",
     "ellps",
     "datum",
@@ -490,11 +490,15 @@ pub(crate) const RESERVED: [&str; 23] = [
     "e",
     "R",
     "R_A",
+    "R_C",
     "units",
     "to_meter",
     "towgs84",
     "nadgrids",
     "geoidgrids",
+    "vunits",
+    "vto_meter",
+    "geoc",
     "init",
     "type",
     "pm",
@@ -520,12 +524,17 @@ fn proj_method(conv: &Node, method: &Node, ang: f64, to_meter: f64) -> Result<Op
         Some(w) if word(w) => w.to_string(),
         _ => return Ok(None),
     };
+    // The string-valued parameters each projection takes; the others are PARAMETERs.
+    let strings: &[&str] = match name.as_str() {
+        "ob_tran" => &["o_proj"],
+        "isea" => &["orient", "mode"],
+        _ => &[],
+    };
     let mut keys: Vec<&str> = Vec::new();
     for w in words {
         match w.split_once('=') {
             Some((k, v)) if word(k) && word(v) => {
-                // The false origin is a PARAMETER, and the name sets no parameter twice.
-                if RESERVED.contains(&k) || matches!(k, "x_0" | "y_0") || keys.contains(&k) {
+                if !strings.contains(&k) || keys.contains(&k) {
                     return Err(bad(&format!("parameter '{k}' of the method 'PROJ {}'", method.name().unwrap_or(""))));
                 }
                 keys.push(k);

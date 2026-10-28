@@ -548,7 +548,8 @@ pub(crate) fn to_proj(root: &Node) -> Option<Converted> {
         }
         // ISEA, with its string-valued parameters in the method's name: `PROJ_isea_orient=pole`.
         m if m.starts_with("projisea") => {
-            let flags = root.child("PROJECTION")?.name()?.strip_prefix("PROJ_isea")?;
+            let raw = root.child("PROJECTION")?.name()?;
+            let flags = raw.get(..9)?.eq_ignore_ascii_case("PROJ_isea").then(|| &raw[9..])?;
             out.push("+proj=isea".into());
             let mut keys: Vec<&str> = Vec::new();
             for flag in flags.split('_').skip(1) {
@@ -556,9 +557,8 @@ pub(crate) fn to_proj(root: &Node) -> Option<Converted> {
                 if k.is_empty() || v.is_empty() || !k.bytes().chain(v.bytes()).all(|c| c.is_ascii_alphanumeric()) {
                     return None;
                 }
-                // As for WKT 2's `PROJ name k=v`: the figure, datum and units come from the CRS, the
-                // numeric parameters from their own PARAMETERs, and no key is given twice.
-                if super::wkt2::RESERVED.contains(&k) || matches!(k, "azi" | "resolution" | "aperture") || keys.contains(&k) {
+                // ISEA's string-valued parameters, each once; the others are PARAMETERs.
+                if !matches!(k, "orient" | "mode") || keys.contains(&k) {
                     return None;
                 }
                 keys.push(k);
