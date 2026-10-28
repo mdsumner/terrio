@@ -13,7 +13,7 @@ EPS = 1e-7
 # The latitude of the cube's corners, atan(1 / sqrt(2)).
 CORNER = math.degrees(math.atan(1 / math.sqrt(2)))
 
-# Each cube face by its centre, centres between faces (PROJ picks the face and keeps the
+# Each cube face by its centre, centres off the face centres (PROJ picks the face and keeps the
 # central meridian), units and false origin.
 CONFIGURATIONS = [
     (0, 0, "m", 0, 0),
