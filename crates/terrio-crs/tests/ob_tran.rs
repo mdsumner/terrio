@@ -86,17 +86,12 @@ fn rotated_projections_pole_forms_figures_and_units_match_frozen_proj() {
     }
 }
 
-/// Whether a CRS definition transforms from WGS 84 (definitions are read when used).
-fn usable(definition: &str) -> bool {
-    let geographic = SpatialRef::parse("+proj=longlat +datum=WGS84").unwrap();
-    SpatialRef::parse(definition).and_then(|crs| Transformer::new(&geographic, &crs)?.transform(10.0, 50.0)).is_ok()
-}
-
 #[test]
 fn definitions_proj_refuses_are_refused() {
     let data: serde_json::Value = serde_json::from_str(include_str!("data/ob_tran_reference.json")).unwrap();
     for definition in data["refused"].as_array().unwrap() {
         let definition = definition.as_str().unwrap();
-        assert!(!usable(definition), "{definition}");
+        let error = SpatialRef::parse(definition).err().unwrap_or_else(|| panic!("{definition} must be refused"));
+        assert!(error.to_string().contains("invalid +proj=ob_tran"), "{definition}: {error}");
     }
 }
