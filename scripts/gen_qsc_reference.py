@@ -36,10 +36,11 @@ def wrap(lon):
     return (lon + 180) % 360 - 180
 
 
-def agree(a, b, tolerance):
+def agree(a, b, factor, tolerance):
+    """Whether two projected points agree within a tolerance in metres."""
     if a is None or b is None:
         return a is None and b is None
-    return all(abs(x - y) <= tolerance * max(1, abs(y)) for x, y in zip(a, b))
+    return all(abs(x - y) * factor <= tolerance for x, y in zip(a, b))
 
 
 def distance(a, b):
@@ -70,6 +71,7 @@ def main():
             # Each side of the face and area edges (multiples of 45 degrees from the centre).
             edges = [[wrap(lon_0 + e + d), lat] for e in range(-180, 180, 45) for d in [-EPS, EPS] for lat in [-50, -10, 10, 50]]
             points += edges
+            factor = target_crs.axis_info[0].unit_conversion_factor
             # The face centre and its antipode, where the inverse goes through acos near 180
             # degrees and so moves by about 1e-6 degrees with the last bit of the northing.
             centre = (0, math.copysign(90, lat_0)) if abs(lat_0) >= 67.5 else (lon_0, 0)
@@ -79,15 +81,17 @@ def main():
                 if distance(point, centre) > 179.999:
                     antipodal.append(len(samples))
                 projected = transformed(forward, point)
-                assert agree(projected, transformed(operation, point), 1e-6), (target, point)
+                assert agree(projected, transformed(operation, point), factor, 1e-6), (target, point)
                 back = transformed(inverse, projected) if projected else None
                 samples.append([*point, projected, back])
-            factor = target_crs.axis_info[0].unit_conversion_factor
             radius = target_crs.ellipsoid.semi_major_metre
             # Points of the face, of its areas' edges and beyond it.
             unit = [(0, 0), (0.5, -0.25), (1, 1), (-1, 0.3), (0.2, -1), (1.5, 0), (3, 2), (-2, -0.5)]
             inverse_points = [[(x0 + x * radius) / factor, (y0 + y * radius) / factor] for x, y in unit]
             inverse_samples = [[point, transformed(inverse, point)] for point in inverse_points]
+            # PROJ refuses no qsc point; the Python and Node/WASM tests rely on it.
+            assert all(s[2] is not None and s[3] is not None for s in samples), target
+            assert all(e is not None for _, e in inverse_samples), target
             cases.append(
                 dict(
                     name=f"qsc {figure} lat_0 {lat_0} lon_0 {lon_0} {units}",

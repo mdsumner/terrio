@@ -17,6 +17,7 @@ REFERENCE = json.loads(
 
 @pytest.mark.parametrize("case", REFERENCE["cases"], ids=lambda case: case["name"])
 def test_qsc_oracle(case):
+    # PROJ refuses no qsc point (the generator checks it), so every sample has its values.
     samples = case["samples"]
     for target in [case["target"], case["wkt2"], case["wkt1"], case["wkt1_esri"]]:
         actual = np.column_stack(

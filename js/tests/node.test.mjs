@@ -1790,6 +1790,7 @@ test("quadrilateralized spherical cube matches PROJ", () => {
         assert.ok(Math.abs(result[j][i] - samples[i][2][j]) * c.metres_per_unit <= 0.001, `${c.name} forward ${i}/${j}`);
       }
     }
+    // PROJ refuses no qsc point (the generator checks it), so every sample has its values.
     const pairs = samples.map(s => [s[2], s[3]]).concat(c.inverse_samples);
     const inverse = terrio.transformPoints(pairs.map(p => p[0][0]), pairs.map(p => p[0][1]), c.target, c.source);
     // At the antipode of the face centre the inverse goes through acos near 180 degrees and moves
