@@ -46,6 +46,8 @@ impl Rotation {
             (lamc + (-alpha.cos()).atan2(-alpha.sin() * phic.sin()), aasin(phic.cos() * alpha.sin()))
         } else if p.has("o_lat_p") {
             (angle("o_lon_p"), angle("o_lat_p"))
+        } else if !["o_lon_1", "o_lat_1", "o_lon_2", "o_lat_2"].iter().any(|k| p.has(k)) {
+            return Err(invalid("no pole: give +o_lat_p, +o_lon_c, +o_lat_c and +o_alpha, or +o_lon_1, +o_lat_1, +o_lon_2 and +o_lat_2"));
         } else {
             let (lam1, phi1, lam2, phi2) = (angle("o_lon_1"), angle("o_lat_1"), angle("o_lon_2"), angle("o_lat_2"));
             if phi1.abs() > HALFPI - TOL || phi2.abs() > HALFPI - TOL {

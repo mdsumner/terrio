@@ -408,8 +408,9 @@ impl Def {
             if o_proj == "ob_tran" {
                 return Err(Error::Crs("invalid +proj=ob_tran: +o_proj=ob_tran".into()));
             }
-            // PROJ applies the CRS's figure, central meridian and false easting and northing, and
-            // only the rotated projection's own formulas: what its setup changes stays with it.
+            // PROJ applies the CRS's figure, central meridian and false easting and northing, and the
+            // rotated projection's own formulas with what its setup sets for them (scale, latitude of
+            // origin); the scale is not restored because the definition does not apply it.
             let (ell, phi0, lam0, x0, y0) = (setup.ell, setup.phi0, setup.lam0, setup.x0, setup.y0);
             let link = projections::build(o_proj, &mut setup)?
                 .ok_or_else(|| Error::Crs(format!("unsupported projection: +proj=ob_tran with +o_proj={o_proj}")))?;

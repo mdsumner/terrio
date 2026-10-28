@@ -766,11 +766,11 @@ WKT1 and WKT2 as PROJ writes them. The generator checks that pyproj's CRS route 
 
 Rust checks the corpus in every encoding with its forward and inverse refusals, the fixture with
 terrio's own WKT1, and the refused definitions; the rotated-pole tests check the other pole forms
-for `longlat` against PROJ. Python and Node/WASM check every sample and the refusals; CLI/MCP
+for `longlat` against PROJ. Python and Node/WASM check every sample and PROJ's refusals; CLI/MCP
 check the fixture and an inverse refusal. The live `ob_tran` conformance suite compares the PROJ
 string and both WKT encodings with GDAL. Two inverse points of the spherical sinusoidal case are
-refused by terrio where PROJ returns a point (see the CRS page); the tests check that terrio
-refuses them.
+refused by terrio where PROJ returns a point (see the CRS page); the Rust test and the
+conformance suite check that terrio refuses them, and Python and Node/WASM leave them out.
 
 ```sh
 cargo test -p terrio-crs --test ob_tran
