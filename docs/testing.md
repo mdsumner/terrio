@@ -854,8 +854,8 @@ PROJ 9.8.1, without network access: 7 configurations (the default; `+orient=pole
 feet and false offsets, on the authalic sphere of WGS 84 and on WGS 84. Each has 556 geographic
 samples, every 15 degrees of longitude at 19 latitudes including the poles and the latitudes of
 the face centres and vertices, and 100 points spread over the sphere; and PROJ's inverse of each
-projected point. Inverse points over and around the unfolded icosahedron (377 where PROJ's
-inverse is defined, 105 elsewhere) are checked too. Each configuration has GDAL's WKT1, ESRI
+projected point. Inverse points over and around the unfolded icosahedron (a grid of 377 per
+configuration where PROJ's inverse is defined, 105 elsewhere; 3,102 in all) are checked too. Each configuration has GDAL's WKT1, ESRI
 WKT1 and WKT2 as PROJ writes them. The generator checks that pyproj's CRS route is PROJ's
 operation itself, and that PROJ's inverse is defined only for the expected configurations: on
 the sphere at every sample, on WGS 84 at most samples (its forward takes the semi-major axis and

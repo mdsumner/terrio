@@ -141,3 +141,20 @@ fn esri_method_name_parameters_are_checked() {
         assert!(transformer(projection).is_err(), "{projection}");
     }
 }
+
+#[test]
+fn origin_after_lon_0_and_lat_0_decides_the_inverse() {
+    // PROJ 9.8.1: `+lat_0=90 +lon_0=0` is the pole orientation's origin, so its inverse is
+    // defined; `+orient=pole +lon_0=11.25` is neither origin, so it is not.
+    let lonlat = SpatialRef::parse("+proj=longlat +R=1").unwrap();
+    let (x, y) = (0.28895720253590557, 0.1948919583135193);
+    for crs in ["+proj=isea +R=1 +lat_0=90 +lon_0=0", "+proj=isea +R=1 +orient=pole"] {
+        let target = SpatialRef::parse(crs).unwrap();
+        let p = Transformer::new(&lonlat, &target).unwrap().transform(17.0, 11.0).unwrap();
+        assert!((p.0 - x).abs() < 1e-12 && (p.1 - y).abs() < 1e-12, "{crs} {p:?}");
+        let q = Transformer::new(&target, &lonlat).unwrap().transform(x, y).unwrap();
+        assert!((q.0 - 17.0).abs() < 1e-9 && (q.1 - 11.0).abs() < 1e-9, "{crs} {q:?}");
+    }
+    let target = SpatialRef::parse("+proj=isea +R=1 +orient=pole +lon_0=11.25").unwrap();
+    assert!(Transformer::new(&target, &lonlat).and_then(|t| t.transform(x, y)).is_err());
+}

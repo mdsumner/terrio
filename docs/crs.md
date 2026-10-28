@@ -753,11 +753,12 @@ refused, as in PROJ.
 
 As in PROJ 9.8.1, the inverse is defined only for the default grid (`+resolution=4`,
 `+aperture=3`, no `+azi`) whose origin, after any `+lon_0` and `+lat_0`, is exactly the default
-orientation's (which `+lon_0=11.25` keeps) or the pole orientation's (which `+lat_0=90 +lon_0=0`
-gives), and refuses points outside the unfolded icosahedron; elsewhere it is refused. On an ellipsoid the
-forward takes the geodetic latitude on a sphere of the semi-major axis, while the inverse uses
-the authalic radius without the authalic latitude, so the inverse does not return the projected
-point: on WGS 84, (147, -42) projects and unprojects to (147.166, -41.969), in PROJ as in terrio.
+orientation's (which `+lon_0=11.25` keeps) or the pole orientation's (which
+`+lat_0=90 +lon_0=0` gives), and refuses points outside the unfolded icosahedron; elsewhere it
+is refused. On an ellipsoid the forward takes the geodetic latitude on a sphere of the
+semi-major axis, while the inverse uses the authalic radius without the authalic latitude, so
+the inverse does not return the projected point: on WGS 84, (147, -42) projects and unprojects
+to (147.166, -41.969), in PROJ as in terrio.
 
 GDAL's WKT1 (`custom_proj4`, which carries the PROJ string), ESRI's `PROJ_isea` (with
 `PROJ_isea_orient=pole` and other options in the method's name) and PROJ's WKT2 method
