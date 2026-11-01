@@ -135,7 +135,8 @@ under the Apache License 2.0.
 terrio's Python package borrows its shape from [rasterio](https://rasterio.readthedocs.io),
 [xarray](https://xarray.dev) and [rioxarray](https://corteva.github.io/rioxarray), so that code
 written for them carries over. `terrio.rio` follows rasterio's API and several of its algorithms
-(BSD-3-Clause, copyright Mapbox), and `terrio.xarray` is adapted from rioxarray (Apache-2.0).
+(BSD-3-Clause, copyright Mapbox), `terrio.xarray` is adapted from rioxarray (Apache-2.0), and
+`terrio.gdalxarray` from [gdalxarray](https://github.com/hypertidy/gdalxarray) (Apache-2.0).
 
 ## Pure-Rust codecs and format crates
 
@@ -181,7 +182,7 @@ retain exact source paths and copyright notices.
 
 [`NOTICE`](https://github.com/opengeos/terrio/blob/main/NOTICE) holds the copyright and license
 notices of the code and data terrio adapts (GDAL, PROJ, CSF, the EPSG dataset, Esri's projection
-data, rasterio, rioxarray, Apache Arrow and the IJG), whose copyright remains with their authors,
+data, rasterio, rioxarray, gdalxarray, Apache Arrow and the IJG), whose copyright remains with their authors,
 and
 [`LICENSE-THIRD-PARTY.md`](https://github.com/opengeos/terrio/blob/main/LICENSE-THIRD-PARTY.md)
 the licenses of every Rust crate terrio's packages and binaries are built with, generated with

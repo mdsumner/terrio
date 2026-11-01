@@ -685,6 +685,18 @@ The copyright notices of those source files:
 Licensed under the Apache License, Version 2.0, reproduced at the end of this file.
 
 -------------------------------------------------------------------------------
+gdalxarray (https://github.com/hypertidy/gdalxarray)
+-------------------------------------------------------------------------------
+
+Terrio files derived from gdalxarray source files (each file's header names them):
+  python/python/terrio/gdalxarray/backend.py
+
+The copyright notices of those source files:
+  Copyright 2025-2026 Michael Sumner
+
+Licensed under the Apache License, Version 2.0, reproduced at the end of this file.
+
+-------------------------------------------------------------------------------
 dask-rasterio (through rioxarray) (https://github.com/dymaxionlabs/dask-rasterio)
 -------------------------------------------------------------------------------
 

@@ -320,7 +320,8 @@ jobs:
         shell: bash
         # rasterio (with its bundled GDAL) and shapely: terrio.rio is compared with rasterio.
         # xarray, dask, rioxarray, zarr and scipy: terrio.xarray is compared with rioxarray.
-        run: python -m pip install pytest rasterio shapely xarray "dask[array]" rioxarray zarr scipy python/dist/*.whl
+        # rasterix and xproj: terrio.gdalxarray (gdalxarray itself needs GDAL's bindings).
+        run: python -m pip install pytest rasterio shapely xarray "dask[array]" rioxarray zarr scipy rasterix xproj python/dist/*.whl
       - name: Test
         working-directory: python
         run: python -m pytest -v
@@ -366,11 +367,11 @@ jobs:
       - name: Fetch test data
         shell: micromamba-shell {0}
         run: scripts/fetch_test_data.sh terrio-data
-      - name: Install rasterio, xarray, dask, rioxarray, zarr and scipy
-        # With pip, on top of the cached environment: terrio.rio is compared with rasterio, and
-        # terrio.xarray with rioxarray.
+      - name: Install rasterio, xarray, dask, rioxarray, gdalxarray, zarr and scipy
+        # With pip, on top of the cached environment: terrio.rio is compared with rasterio,
+        # terrio.xarray with rioxarray, and terrio.gdalxarray with gdalxarray (on this GDAL).
         shell: micromamba-shell {0}
-        run: python -m pip install rasterio xarray "dask[array]" rioxarray zarr scipy
+        run: python -m pip install rasterio xarray "dask[array]" rioxarray gdalxarray rasterix xproj zarr scipy
       - name: Real-data tests
         env:
           TERRIO_TEST_DATA: ${{ github.workspace }}/terrio-data

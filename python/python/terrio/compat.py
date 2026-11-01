@@ -1,12 +1,13 @@
-"""Run code written for rasterio, rioxarray and pyogrio on terrio, in a process without GDAL.
+"""Run code written for rasterio, rioxarray, gdalxarray and pyogrio on terrio, without GDAL.
 
 `install()` makes `import rasterio` give `terrio.rio` and `import rasterio.crs` give
 `terrio.rio.crs`, for every submodule; `import rioxarray` give `terrio.xarray`, with its accessor
-registered as `.rio`; and `import pyogrio` give `terrio.pyogrio`, when terrio has it. The modules
-are terrio's own objects, not copies, so `rasterio.crs.CRS is terrio.rio.crs.CRS` and an
-exception terrio raises is the one `except rasterio.errors.RasterioIOError` catches. Nothing is
-imported until code imports it. A library whose terrio module cannot be imported (`rioxarray`
-without xarray) is not stood in for: it is found, or not found, as without terrio. Once `rasterio`
+registered as `.rio`; `import gdalxarray` give `terrio.gdalxarray`; and `import pyogrio` give
+`terrio.pyogrio`, when terrio has it. The modules are terrio's own objects, not copies, so
+`rasterio.crs.CRS is terrio.rio.crs.CRS` and an exception terrio raises is the one
+`except rasterio.errors.RasterioIOError` catches. Nothing is imported until code imports it. A
+library whose terrio module cannot be imported (`rioxarray` without xarray) is not stood in for:
+it is found, or not found, as without terrio. Once `rasterio`
 is terrio's, each HTTP request terrio retries is logged as rasterio logs GDAL's warning for it
 (`CPLE_AppDefined in HTTP error code: 0 - URL. Retrying again in 0.5 secs`, on `rasterio._env`),
 and so is each warp kernel run that moves warped values off the output nodata value
@@ -34,6 +35,7 @@ from types import ModuleType
 TARGETS: dict[str, str] = {
     "rasterio": "terrio.rio",
     "rioxarray": "terrio.xarray",
+    "gdalxarray": "terrio.gdalxarray",
     "pyogrio": "terrio.pyogrio",
 }
 
@@ -229,7 +231,9 @@ def _is_alias(name: str, module: object) -> bool:
     return module is sys.modules.get(real)
 
 
-def install(rasterio: bool = True, rioxarray: bool = True, pyogrio: bool = True) -> None:
+def install(
+    rasterio: bool = True, rioxarray: bool = True, pyogrio: bool = True, gdalxarray: bool = True
+) -> None:
     """Makes the chosen libraries' imports give terrio's modules, for the rest of the process.
 
     Calling it again adds libraries; it never removes one.
@@ -238,11 +242,14 @@ def install(rasterio: bool = True, rioxarray: bool = True, pyogrio: bool = True)
         rasterio: Stand in for `rasterio` and all its submodules with `terrio.rio`.
         rioxarray: Stand in for `rioxarray` with `terrio.xarray`, whose accessor becomes `.rio`.
         pyogrio: Stand in for `pyogrio` with `terrio.pyogrio`, when terrio has it.
+        gdalxarray: Stand in for `gdalxarray` with `terrio.gdalxarray`, whose engine is
+            `terrio_gdalxarray`.
 
     Raises:
         AlreadyImportedError: When one of these libraries, the real one, is already imported.
     """
-    wanted = [name for name, on in (("rasterio", rasterio), ("rioxarray", rioxarray)) if on]
+    chosen = (("rasterio", rasterio), ("rioxarray", rioxarray), ("gdalxarray", gdalxarray))
+    wanted = [name for name, on in chosen if on]
     if pyogrio and importlib.util.find_spec(TARGETS["pyogrio"]) is not None:
         wanted.append("pyogrio")
     real = sorted(

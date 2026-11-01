@@ -239,6 +239,11 @@ has rioxarray's `.rio` methods (`clip_box`, `clip`, `reproject`, `reproject_matc
 `to_raster`...), compared with rioxarray on real files. See
 [xarray](https://terrio.dev/xarray/).
 
+`terrio.gdalxarray` is gdalxarray's xarray engine without installing GDAL
+(`pip install "terrio[gdalxarray]"`): `xr.open_dataset(path, engine="terrio_gdalxarray",
+multidim=False)` gives gdalxarray's classic-raster Datasets, compared with gdalxarray on real
+files. See [gdalxarray](https://terrio.dev/gdalxarray/).
+
 To build the Linux wheel for glibc 2.28 and later (`manylinux_2_28`) without Docker, run
 `scripts/build_wheel_manylinux_2_28.sh [OUT_DIR]` with Rust and `pip install "maturin[zig]"`: the
 wheel lands in `python/dist` by default, and only if it needs no newer glibc and holds no path of

@@ -34,6 +34,7 @@ nav = [
     { "Rust Library" = "rust.md" },
     { "Python" = "python.md" },
     { "xarray" = "xarray.md" },
+    { "gdalxarray" = "gdalxarray.md" },
     { "JavaScript" = "javascript.md" },
     { "AI Agents (MCP)" = "mcp.md" },
   ] },
